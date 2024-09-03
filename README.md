@@ -56,7 +56,13 @@ docker pull chenhsuanlin/neuralangelo:23.04-py3
 
 Run the container
 ```bash
-docker run -it --gpus all --name neuralangelo_container chenhsuanlin/neuralangelo:23.04-py3
+sudo docker run -it --gpus all --name neuralangelo_container \
+    --shm-size=8g \
+    --ipc=host \
+    --ulimit memlock=-1 \
+    --ulimit stack=67108864 \
+    chenhsuanlin/neuralangelo:23.04-py3
+
 ```
 
 ## Train and run the model
@@ -76,4 +82,17 @@ torchrun --nproc_per_node=1 train.py \
     --model.object.sdf.encoding.hashgrid.dict_size=19 \
     --optim.sched.warm_up_end=200 \
     --optim.sched.two_steps=[12000,16000]
+```
+
+```bash
+GROUP="test_exp"
+NAME="lego"
+mesh_fname="logs/${GROUP}/${NAME}/mesh.ply"
+
+torchrun --nproc_per_node=1 projects/neuralangelo/scripts/extract_mesh.py \
+    --config="logs/${GROUP}/${NAME}/config.yaml" \
+    --checkpoint="logs/${GROUP}/${NAME}/epoch_00400_iteration_000020000_checkpoint.pt" \
+    --output_file="${mesh_fname}" \
+    --resolution=300 --block_res=128 \
+    --textured
 ```
