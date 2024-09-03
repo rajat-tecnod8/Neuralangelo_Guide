@@ -48,3 +48,22 @@ Run the container
 ```bash
 docker run -it --gpus all --name neuralangelo_container chenhsuanlin/neuralangelo:23.04-py3
 ```
+
+## Train and run the model
+```bash
+pip install -r requirements.txt
+```
+
+```bash
+torchrun --nproc_per_node=1 train.py \
+    --logdir=logs/test_exp/lego \
+    --show_pbar \
+    --config=projects/neuralangelo/configs/custom/lego.yaml \
+    --data.readjust.scale=0.5 \
+    --max_iter=20000 \
+    --validation_iter=99999999 \
+    --model.object.sdf.encoding.coarse2fine.step=200 \
+    --model.object.sdf.encoding.hashgrid.dict_size=19 \
+    --optim.sched.warm_up_end=200 \
+    --optim.sched.two_steps=[12000,16000]
+```
